@@ -12,6 +12,7 @@ cache:
 install: true
 
 script:
+  - mvn install -pl terasoluna-gfw-build-resources
   - mvn xml:check-format -P xml-check-format
   - mvn formatter:validate -P common-libs
   - mvn -U clean install
