@@ -77,24 +77,30 @@
           <artifactId>maven-license-plugin</artifactId>
           <version>${com.google.code.maven-license-plugin.version}</version>
           <configuration>
-            <header>${project.root.basedir}/../license/header.txt</header>
+            <header>org/terasoluna/gfw/license/header.txt</header>
             <includes>
               <include>src/main/java/**/*.java</include>
               <include>src/test/java/**/*.java</include>
             </includes>
             <encoding>${encoding}</encoding>
             <headerDefinitions>
-              <headerDefinition>${project.root.basedir}/../license/header-definition.xml</headerDefinition>
+              <headerDefinition>org/terasoluna/gfw/license/header-definition.xml</headerDefinition>
             </headerDefinitions>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.terasoluna.gfw</groupId>
+              <artifactId>terasoluna-gfw-build-resources</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <groupId>net.revelc.code.formatter</groupId>
           <artifactId>formatter-maven-plugin</artifactId>
           <version>${formatter-maven-plugin.version}</version>
           <configuration>
-            <configFile>${project.root.basedir}/../eclipse/formatter.xml
-            </configFile>
+            <configFile>org/teraoluna/gfw/format/formatter.xml</configFile>
             <lineEnding>CRLF</lineEnding>
             <directories>
               <directory>${project.basedir}</directory>
@@ -107,6 +113,13 @@
               <exclude>terasoluna-gfw-string/src/main/java/org/terasoluna/gfw/common/fullhalf/DefaultFullHalf.java</exclude>
             </excludes>
           </configuration>
+          <dependencies>
+            <dependency>
+              <groupId>org.terasoluna.gfw</groupId>
+              <artifactId>terasoluna-gfw-build-resources</artifactId>
+              <version>${project.version}</version>
+            </dependency>
+          </dependencies>
         </plugin>
         <plugin>
           <groupId>org.codehaus.mojo</groupId>

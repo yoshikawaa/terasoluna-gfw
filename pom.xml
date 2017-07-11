@@ -53,6 +53,7 @@
       </activation>
       <modules>
         <module>terasoluna-gfw-parent</module>
+        <module>terasoluna-gfw-build-resources</module>
         <module>terasoluna-gfw-common-libraries</module>
         <module>terasoluna-gfw-dependencies</module>
       </modules>
@@ -62,6 +63,7 @@
       <!-- for release to Maven Central Repository -->
       <modules>
         <module>terasoluna-gfw-parent</module>
+        <module>terasoluna-gfw-build-resources</module>
         <module>terasoluna-gfw-common-libraries</module>
         <module>terasoluna-gfw-dependencies</module>
       </modules>
@@ -142,8 +144,7 @@
               <artifactId>formatter-maven-plugin</artifactId>
               <version>${formatter-maven-plugin.version}</version>
               <configuration>
-                <configFile>${project.basedir}/eclipse/formatter.xml
-                </configFile>
+                <configFile>org/terasoluna/gfw/format/formatter.xml</configFile>
                 <lineEnding>CRLF</lineEnding>
                 <directories>
                   <directory>${project.basedir}</directory>
@@ -156,6 +157,13 @@
                   <exclude>terasoluna-gfw-common-libraries/terasoluna-gfw-string/src/main/java/org/terasoluna/gfw/common/fullhalf/DefaultFullHalf.java</exclude>
                 </excludes>
               </configuration>
+              <dependencies>
+                <dependency>
+                  <groupId>org.terasoluna.gfw</groupId>
+                  <artifactId>terasoluna-gfw-build-resources</artifactId>
+                  <version>${project.version}</version>
+                </dependency>
+              </dependencies>
             </plugin>
             <plugin>
               <groupId>org.eluder.coveralls</groupId>
