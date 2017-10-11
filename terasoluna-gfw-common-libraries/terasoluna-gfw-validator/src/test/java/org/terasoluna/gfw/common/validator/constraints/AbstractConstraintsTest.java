@@ -67,6 +67,20 @@ abstract public class AbstractConstraintsTest<F> {
     }
 
     /**
+     * set {@code ExpectedException} for failed to initialize.
+     * @param cls expected inner exception.
+     * @param message expected message of inner exception.
+     */
+    protected void setExpectedFailedToInitialize(Class<?> cls, String message) {
+        thrown.expect(ValidationException.class);
+        thrown.expectCause(allOf(Matchers.<Throwable> instanceOf(
+                IllegalArgumentException.class), hasProperty("message", is(
+                        MESSAGE_INITIALIZE_ERROR)), hasProperty("cause", allOf(
+                                Matchers.<Throwable> instanceOf(cls),
+                                hasProperty("message", is(message))))));
+    }
+
+    /**
      * set {@code ExpectedException} for type not support.
      * @param cls expected not support type.
      */
