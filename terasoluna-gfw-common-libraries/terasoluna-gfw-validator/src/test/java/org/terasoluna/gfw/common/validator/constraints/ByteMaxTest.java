@@ -133,6 +133,20 @@ public class ByteMaxTest extends AbstractConstraintsTest<ByteMaxTestForm> {
     }
 
     /**
+     * specify negative value. expected {@code ValidationException} caused by {@code IllegalArgumentException} that message is
+     * {@code failed to initialize validator by invalid argument} and nested by {@code IllegalArgumentException} that message is
+     * {@code value[-1] must not be negative value.}.
+     * @throws Throwable
+     */
+    @Test
+    public void testSpecifyNegativeValue() throws Throwable {
+        setExpectedFailedToInitialize(IllegalArgumentException.class,
+                "value[-1] must not be negative value.");
+
+        validator.validate(form, NegativeValue.class);
+    }
+
+    /**
      * specify not support type. expected {@code UnexpectedTypeException}
      * @throws Throwable
      */
@@ -156,6 +170,12 @@ public class ByteMaxTest extends AbstractConstraintsTest<ByteMaxTestForm> {
     };
 
     /**
+     * Validation group value negative.
+     */
+    private static interface NegativeValue {
+    };
+
+    /**
      * Validation group unexpected type.
      */
     private static interface UnexpectedType {
@@ -166,7 +186,8 @@ public class ByteMaxTest extends AbstractConstraintsTest<ByteMaxTestForm> {
                 @ByteMax(value = 6, charset = "shift-jis", groups = {
                         SpecifyCharset.class }),
                 @ByteMax(value = 6, charset = "illegal-charset", groups = {
-                        IllegalCharset.class }) })
+                        IllegalCharset.class }), @ByteMax(value = -1, groups = {
+                                NegativeValue.class }) })
         private String stringProperty;
 
         @ByteMax(6)

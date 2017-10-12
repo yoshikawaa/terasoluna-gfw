@@ -50,7 +50,7 @@ public class ByteMaxValidator implements
     /**
      * Initialize validator.
      * @param constraintAnnotation annotation instance for a given constraint declaration
-     * @throws IllegalArgumentException failed to get a charset by name.
+     * @throws IllegalArgumentException failed to get a charset by name, or value is invalid.
      * @see javax.validation.ConstraintValidator#initialize(java.lang.annotation.Annotation)
      */
     @Override
@@ -61,6 +61,10 @@ public class ByteMaxValidator implements
             throw reportFailedToInitialize(e);
         }
         max = constraintAnnotation.value();
+        if (max < 0) {
+            throw reportFailedToInitialize(new IllegalArgumentException("value["
+                    + max + "] must not be negative value."));
+        }
     }
 
     /**

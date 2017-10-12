@@ -40,12 +40,13 @@ import org.terasoluna.gfw.common.validator.constraintvalidators.ByteMaxValidator
  * Supported types are:
  * </p>
  * <ul>
- * <li>{@code String}</li>
+ * <li>{@code CharSequence}</li>
  * </ul>
  * <p>
  * {@code null} elements are considered valid. Determine the byte length By encoding the string in the specified
- * {@link ByteMax#charset()}. If not specify, encode with charset {@code "UTF-8"}. If specify a charset that can not be used, it
- * is thrown {@link IllegalArgumentException}(wrapped in {@link ValidationException}).
+ * {@link ByteMax#charset()}. If not specify, encode with charset {@code "UTF-8"}.
+ * An {@link IllegalArgumentException}(wrapped in {@link ValidationException}) is thrown if specify
+ * {@link ByteMax#charset()} that can not be used or specify {@link ByteMax#value()} that is negative value.
  * </p>
  * @since 5.1.0
  * @see ByteMaxValidator

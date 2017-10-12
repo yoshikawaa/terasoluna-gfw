@@ -181,14 +181,54 @@ public class ByteSizeTest extends AbstractConstraintsTest<ByteSizeTestForm> {
     }
 
     /**
-     * specify not support type. expected {@code UnexpectedTypeException}
+     * not specify min and max. expected valid if input value encoded in UTF-8 is between {@code 0} and {@link Long#MAX_VALUE} value.
      * @throws Throwable
      */
     @Test
-    public void testAnnotateUnexpectedType() throws Throwable {
-        thrown.expect(UnexpectedTypeException.class);
+    public void testSpecifyNotSpecifyMinAndMax() throws Throwable {
 
-        validator.validate(form, UnexpectedType.class);
+        {
+            form.setStringProperty("");
+
+            violations = validator.validate(form, NotSpecifyMinAndMax.class);
+            assertThat(violations.size(), is(0));
+        }
+
+        {
+            form.setStringProperty(String.format("%" + Long.MAX_VALUE + "d",
+                    0));
+
+            violations = validator.validate(form, NotSpecifyMinAndMax.class);
+            assertThat(violations.size(), is(0));
+        }
+    }
+
+    /**
+     * specify negative min. expected {@code ValidationException} caused by {@code IllegalArgumentException} that message is
+     * {@code failed to initialize validator by invalid argument} and nested by {@code IllegalArgumentException} that message is
+     * {@code min[-1] must not be negative value.}.
+     * @throws Throwable
+     */
+    @Test
+    public void testSpecifyNegativeMin() throws Throwable {
+        setExpectedFailedToInitialize(IllegalArgumentException.class,
+                "min[-1] must not be negative value.");
+
+        validator.validate(form, NegativeMin.class);
+    }
+
+    /**
+     * specify negative max. expected {@code ValidationException} caused by {@code IllegalArgumentException} that message is
+     * {@code failed to initialize validator by invalid argument} and nested by {@code IllegalArgumentException} that message is
+     * {@code max[-1] must not be negative value.}.
+     * @throws Throwable
+     */
+    @Test
+    public void testNotSpecifyMax() throws Throwable {
+        setExpectedFailedToInitialize(IllegalArgumentException.class,
+                "max[-1] must not be negative value.");
+
+        validator.validate(form, NegativeMax.class);
     }
 
     /**
@@ -225,7 +265,9 @@ public class ByteSizeTest extends AbstractConstraintsTest<ByteSizeTestForm> {
     }
 
     /**
-     * specify max lower than min value. expected {@code IllegalArgumentException} with specific message.
+     * specify max lower than min value. expected {@code ValidationException} caused by {@code IllegalArgumentException} that message is
+     * {@code failed to initialize validator by invalid argument} and nested by {@code IllegalArgumentException} that message is
+     * {@code max[2] must be higher or equal to min[3].}.
      * @throws Throwable
      */
     @Test
@@ -234,6 +276,17 @@ public class ByteSizeTest extends AbstractConstraintsTest<ByteSizeTestForm> {
                 "max[2] must be higher or equal to min[3].");
 
         validator.validate(form, MaxLowerThanMin.class);
+    }
+
+    /**
+     * specify not support type. expected {@code UnexpectedTypeException}
+     * @throws Throwable
+     */
+    @Test
+    public void testAnnotateUnexpectedType() throws Throwable {
+        thrown.expect(UnexpectedTypeException.class);
+
+        validator.validate(form, UnexpectedType.class);
     }
 
     /**
@@ -255,6 +308,24 @@ public class ByteSizeTest extends AbstractConstraintsTest<ByteSizeTestForm> {
     };
 
     /**
+     * Validation group min and max are not specified.
+     */
+    private static interface NotSpecifyMinAndMax {
+    };
+
+    /**
+     * Validation group min negative.
+     */
+    private static interface NegativeMin {
+    };
+
+    /**
+     * Validation group max negative.
+     */
+    private static interface NegativeMax {
+    };
+
+    /**
      * Validation group max equals to min.
      */
     private static interface MaxEqualsToMin {
@@ -271,10 +342,14 @@ public class ByteSizeTest extends AbstractConstraintsTest<ByteSizeTestForm> {
                 @ByteSize(min = 3, max = 6, charset = "shift-jis", groups = {
                         SpecifyCharset.class }),
                 @ByteSize(min = 3, max = 6, charset = "illegal-charset", groups = {
-                        IllegalCharset.class }),
+                        IllegalCharset.class }), @ByteSize(groups = {
+                                NotSpecifyMinAndMax.class }),
+                @ByteSize(min = -1, groups = { NegativeMin.class }),
+                @ByteSize(max = -1, groups = { NegativeMax.class }),
                 @ByteSize(min = 3, max = 3, groups = { MaxEqualsToMin.class }),
-                @ByteSize(min = 3, max = 2, groups = {
-                        MaxLowerThanMin.class }) })
+                @ByteSize(min = 3, max = 2, groups = { MaxLowerThanMin.class })
+
+        })
         private String stringProperty;
 
         @ByteSize(min = 3, max = 6)
