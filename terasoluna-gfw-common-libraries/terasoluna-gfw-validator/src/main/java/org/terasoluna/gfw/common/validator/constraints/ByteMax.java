@@ -37,6 +37,9 @@ import org.terasoluna.gfw.common.validator.constraintvalidators.ByteMaxValidator
  * The annotated element must be a {@link CharSequence}({@link String}, {@link StringBuilder}, etc ...) whose byte length must
  * be lower or equal to the specified maximum.
  * <p>
+ * If you want to specify not only a maximum length but also a minimum length, it is recommended to use {@link ByteSize}.
+ * </p>
+ * <p>
  * Supported types are:
  * </p>
  * <ul>
@@ -50,6 +53,7 @@ import org.terasoluna.gfw.common.validator.constraintvalidators.ByteMaxValidator
  * </p>
  * @since 5.1.0
  * @see ByteMaxValidator
+ * @see ByteSize
  */
 @Documented
 @Constraint(validatedBy = { ByteMaxValidator.class })

@@ -55,6 +55,8 @@ import org.terasoluna.gfw.common.validator.constraintvalidators.ByteSizeValidato
  * </p>
  * @since 5.4.0
  * @see ByteSizeValidator
+ * @see ByteMin
+ * @see ByteMax
  */
 @Documented
 @Constraint(validatedBy = { ByteSizeValidator.class })
@@ -98,7 +100,7 @@ public @interface ByteSize {
     /**
      * Defines several {@link ByteSize} annotations on the same element.
      * @see ByteSize
-     * @since 5.1.0
+     * @since 5.4.0
      */
     @Documented
     @Target({ METHOD, FIELD, TYPE, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
