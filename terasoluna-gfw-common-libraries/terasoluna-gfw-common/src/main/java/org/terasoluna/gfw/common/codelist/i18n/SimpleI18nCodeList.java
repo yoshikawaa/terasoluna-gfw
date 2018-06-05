@@ -15,20 +15,13 @@
  */
 package org.terasoluna.gfw.common.codelist.i18n;
 
-import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.terasoluna.gfw.common.codelist.CodeList;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Table;
-import com.google.common.collect.Tables;
 
 /**
  * Simple implementation of {@link I18nCodeList}<br>
@@ -201,53 +194,12 @@ import com.google.common.collect.Tables;
  * &lt;/bean&gt;
  * </pre>
  */
-public class SimpleI18nCodeList extends AbstractI18nCodeList implements
-                                InitializingBean {
-    /**
-     * Logger.
-     */
-    private static final Logger logger = LoggerFactory.getLogger(
-            SimpleI18nCodeList.class);
+public class SimpleI18nCodeList extends AbstractI18nCodeList {
 
-    /**
-     * codelist table.
-     */
-    Table<Locale, String, String> codeListTable;
-
-    /**
-     * supplier to return a {@link LinkedHashMap} object.
-     */
-    private static final Supplier<LinkedHashMap<String, String>> LINKED_HASH_MAP_SUPPLIER = new Supplier<LinkedHashMap<String, String>>() {
-        @Override
-        public LinkedHashMap<String, String> get() {
-            return Maps.newLinkedHashMap();
-        }
-    };
-
-    /**
-     * <p>
-     * returns row of codelist table.
-     * </p>
-     * @see org.terasoluna.gfw.common.codelist.i18n.I18nCodeList#asMap(java.util.Locale)
-     */
-    @Override
-    public Map<String, String> asMap(Locale locale) {
-        Assert.notNull(locale, "locale is null");
-        return codeListTable.row(locale);
-    }
-
-    /**
-     * check whether the code list table is null.<br>
-     * <p>
-     * output warn log in case of table is null.
-     * </p>
-     */
-    private void checkTable() {
-        if (codeListTable != null) {
-            logger.warn("Codelist table has already built, but re-build");
-        }
-    }
-
+    private Map<Locale, Map<String, String>> rows;
+    private Map<Locale, CodeList> rowsByCodeList;
+    private Map<String, Map<Locale, String>> cols;
+    
     /**
      * set table by rows ({@link Map}).<br>
      * <p>
@@ -256,18 +208,7 @@ public class SimpleI18nCodeList extends AbstractI18nCodeList implements
      * @param rows table by rows ({@link Map}) per locale
      */
     public void setRows(Map<Locale, Map<String, String>> rows) {
-        checkTable();
-        Table<Locale, String, String> table = createTable();
-        for (Map.Entry<Locale, Map<String, String>> e : rows.entrySet()) {
-            Locale locale = e.getKey();
-            Map<String, String> row = e.getValue();
-            for (Map.Entry<String, String> re : row.entrySet()) {
-                String value = re.getKey();
-                String label = re.getValue();
-                table.put(locale, value, label);
-            }
-        }
-        this.codeListTable = Tables.unmodifiableTable(table);
+        this.rows = rows;
     }
 
     /**
@@ -275,21 +216,10 @@ public class SimpleI18nCodeList extends AbstractI18nCodeList implements
      * <p>
      * The key is {@link Locale} and the value is {@link CodeList}.<br>
      * </p>
-     * @param rows table by rows ({@link CodeList}) per locale
+     * @param rowsByCodeList table by rows ({@link CodeList}) per locale
      */
-    public void setRowsByCodeList(Map<Locale, CodeList> rows) {
-        checkTable();
-        Table<Locale, String, String> table = createTable();
-        for (Map.Entry<Locale, CodeList> e : rows.entrySet()) {
-            Locale locale = e.getKey();
-            Map<String, String> row = e.getValue().asMap();
-            for (Map.Entry<String, String> re : row.entrySet()) {
-                String value = re.getKey();
-                String label = re.getValue();
-                table.put(locale, value, label);
-            }
-        }
-        this.codeListTable = Tables.unmodifiableTable(table);
+    public void setRowsByCodeList(Map<Locale, CodeList> rowsByCodeList) {
+        this.rowsByCodeList = rowsByCodeList;
     }
 
     /**
@@ -300,39 +230,58 @@ public class SimpleI18nCodeList extends AbstractI18nCodeList implements
      * @param cols table by columns ({@link Map}) per locale
      */
     public void setColumns(Map<String, Map<Locale, String>> cols) {
-        checkTable();
-        Table<Locale, String, String> table = createTable();
-        for (Map.Entry<String, Map<Locale, String>> e : cols.entrySet()) {
-            String value = e.getKey();
-            Map<Locale, String> col = e.getValue();
-            for (Map.Entry<Locale, String> ce : col.entrySet()) {
-                Locale locale = ce.getKey();
-                String label = ce.getValue();
-                table.put(locale, value, label);
-            }
-        }
-        this.codeListTable = Tables.unmodifiableTable(table);
+        this.cols = cols;
     }
-
-    /**
-     * create table which consist of {@link LinkedHashMap} factory.
-     * @return table
-     */
-    private Table<Locale, String, String> createTable() {
-        Map<Locale, Map<String, String>> backingMap = Maps.newLinkedHashMap();
-        Table<Locale, String, String> table = Tables.newCustomTable(backingMap,
-                LINKED_HASH_MAP_SUPPLIER);
-        return table;
-    }
-
-    /**
-     * <p>
-     * check whether codeListTable is initialized.
-     * </p>
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+    
     @Override
     public void afterPropertiesSet() {
-        Assert.notNull(codeListTable, "codeListTable is not initialized!");
+        int count = 0;
+        for (Object obj : new Object[] { rows, rowsByCodeList, cols }) {
+            if (obj != null) {
+                count++;
+            }
+        }
+        Assert.isTrue(count == 1, "either one is available.");
+        super.afterPropertiesSet();
     }
+
+    @Override
+    protected Table<Locale, String, String> retrieveTable() {
+
+        Table<Locale, String, String> table = createTable();
+        
+        if (rows != null) {
+            for (Map.Entry<Locale, Map<String, String>> e : rows.entrySet()) {
+                Locale locale = e.getKey();
+                Map<String, String> row = e.getValue();
+                for (Map.Entry<String, String> re : row.entrySet()) {
+                    String value = re.getKey();
+                    String label = re.getValue();
+                    table.put(locale, value, label);
+                }
+            }
+        } else if (rowsByCodeList != null) {
+            for (Map.Entry<Locale, CodeList> e : rowsByCodeList.entrySet()) {
+                Locale locale = e.getKey();
+                Map<String, String> row = e.getValue().asMap();
+                for (Map.Entry<String, String> re : row.entrySet()) {
+                    String value = re.getKey();
+                    String label = re.getValue();
+                    table.put(locale, value, label);
+                }
+            }
+        } else if (cols != null) {
+            for (Map.Entry<String, Map<Locale, String>> e : cols.entrySet()) {
+                String value = e.getKey();
+                Map<Locale, String> col = e.getValue();
+                for (Map.Entry<Locale, String> ce : col.entrySet()) {
+                    Locale locale = ce.getKey();
+                    String label = ce.getValue();
+                    table.put(locale, value, label);
+                }
+            }
+        }
+        return table;
+    }
+    
 }

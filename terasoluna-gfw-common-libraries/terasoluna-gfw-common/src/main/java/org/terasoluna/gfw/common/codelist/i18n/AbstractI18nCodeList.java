@@ -15,17 +15,49 @@
  */
 package org.terasoluna.gfw.common.codelist.i18n;
 
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.util.Assert;
 import org.terasoluna.gfw.common.codelist.AbstractCodeList;
+import org.terasoluna.gfw.common.codelist.ReloadableCodeList;
+
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Table;
+import com.google.common.collect.Tables;
 
 /**
  * Abstract extended implementation of {@link AbstractCodeList}. Adds Internationalization support to {@link AbstractCodeList}
  * by implementing {I18nCodeList} interface.
  */
 public abstract class AbstractI18nCodeList extends AbstractCodeList implements
-                                           I18nCodeList {
+                                           I18nCodeList, ReloadableCodeList, InitializingBean {
+
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    
+    private final ReadWriteLockTableWrapper<Locale, String, String> cachedTable = createTable();
+    private volatile Table<Locale, String, String> exposedTable = null;
+    
+    /**
+     * Lazy initialization flag
+     */
+    private boolean lazyInit = false;
+
+    /**
+     * supplier to return a {@link LinkedHashMap} object.
+     */
+    private static final Supplier<LinkedHashMap<String, String>> LINKED_HASH_MAP_SUPPLIER = new Supplier<LinkedHashMap<String, String>>() {
+        @Override
+        public LinkedHashMap<String, String> get() {
+            return Maps.newLinkedHashMap();
+        }
+    };
 
     /**
      * <p>
@@ -38,5 +70,61 @@ public abstract class AbstractI18nCodeList extends AbstractCodeList implements
     public Map<String, String> asMap() {
         return asMap(Locale.getDefault());
     }
+    
+    @Override
+    public Map<String, String> asMap(Locale locale) {
+        Assert.notNull(locale, "locale is null");
+        
+        if (exposedTable == null) {
+            refresh();
+        }
+        return exposedTable.row(locale);
+    }
 
+    /**
+     * Flag that determines whether the codelist information needs to be eager fetched. <br>
+     * @param lazyInit flag
+     */
+    public void setLazyInit(boolean lazyInit) {
+        this.lazyInit = lazyInit;
+    }
+
+    @Override
+    public final void refresh() {
+        if (logger.isDebugEnabled()) {
+            logger.debug("refresh codelist codeListId={}", getCodeListId());
+        }
+        synchronized (cachedTable) {
+            cachedTable.clear();
+            cachedTable.putAll(retrieveTable());
+            exposedTable = ImmutableTable.copyOf(cachedTable);
+        }
+    }
+
+    /**
+     * <p>
+     * check whether codeListTable is initialized.
+     * </p>
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() {
+        if (!lazyInit) {
+            refresh();
+        }
+    }
+
+    /**
+     * create table which consist of {@link LinkedHashMap} factory.
+     * @return table
+     */
+    protected ReadWriteLockTableWrapper<Locale, String, String> createTable() {
+        Map<Locale, Map<String, String>> backingMap = Maps.newLinkedHashMap();
+        ReadWriteLockTableWrapper<Locale, String, String> table = new ReadWriteLockTableWrapper<Locale, String, String>(Tables.newCustomTable(backingMap,
+                LINKED_HASH_MAP_SUPPLIER));
+        return table;
+    }
+    
+    abstract protected Table<Locale, String, String> retrieveTable();
+    
 }
