@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.util.Assert;
 import org.terasoluna.gfw.common.codelist.CodeList;
+import org.terasoluna.gfw.common.codelist.ReloadableCodeList;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.Maps;
@@ -274,15 +275,23 @@ public class SimpleI18nCodeList extends AbstractI18nCodeList implements
      * set table by rows ({@link CodeList})<br>
      * <p>
      * The key is {@link Locale} and the value is {@link CodeList}.<br>
+     * If you want to enable code list reloading, please use {@link ReloadableI18nCodeList}.<br>
      * </p>
      * @param rows table by rows ({@link CodeList}) per locale
+     * @see {@link ReloadableI18nCodeList}
      */
     public void setRowsByCodeList(Map<Locale, CodeList> rows) {
         checkTable();
         Table<Locale, String, String> table = createTable();
         for (Map.Entry<Locale, CodeList> e : rows.entrySet()) {
             Locale locale = e.getKey();
-            Map<String, String> row = e.getValue().asMap();
+            CodeList codeList = e.getValue();
+
+            if (codeList instanceof ReloadableCodeList) {
+                logger.warn("If you want to enable code list reloading, please use ReloadableI18nCodeList.");
+            }
+
+            Map<String, String> row = codeList.asMap();
             for (Map.Entry<String, String> re : row.entrySet()) {
                 String value = re.getKey();
                 String label = re.getValue();
