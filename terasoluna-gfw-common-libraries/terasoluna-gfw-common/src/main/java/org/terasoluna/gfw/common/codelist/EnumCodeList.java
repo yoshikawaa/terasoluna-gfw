@@ -19,6 +19,7 @@ import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -62,15 +63,17 @@ public class EnumCodeList extends AbstractCodeList {
     public EnumCodeList(Class<? extends Enum<?>> enumClass) {
         Assert.isTrue(CodeListItem.class.isAssignableFrom(enumClass),
                 "the given enumClass must implement " + CodeListItem.class);
-        Map<String, String> codeList = new LinkedHashMap<String, String>();
         Method method = ReflectionUtils.findMethod(enumClass, "values");
 
         Enum<?>[] result = (Enum<?>[]) ReflectionUtils.invokeMethod(method,
                 enumClass);
-        for (Enum<?> e : result) {
-            CodeListItem item = (CodeListItem) e;
-            codeList.put(item.getCodeValue(), item.getCodeLabel());
-        }
+        Map<String, String> codeList = Arrays.stream(result) //
+                .collect(LinkedHashMap::new, //
+                        (map, e) -> {
+                            CodeListItem item = (CodeListItem) e;
+                            map.put(item.getCodeValue(), item.getCodeLabel());
+                        }, //
+                        Map::putAll);
 
         this.codeListMap = Collections.unmodifiableMap(codeList);
     }

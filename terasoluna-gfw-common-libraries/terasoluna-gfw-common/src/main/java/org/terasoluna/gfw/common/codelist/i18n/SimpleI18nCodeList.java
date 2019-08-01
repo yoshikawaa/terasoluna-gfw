@@ -247,6 +247,7 @@ public class SimpleI18nCodeList extends AbstractI18nCodeList implements
     public void setRows(Map<Locale, Map<String, String>> rows) {
         checkTable();
         Table<Locale, String, String> table = createTable();
+
         for (Map.Entry<Locale, Map<String, String>> e : rows.entrySet()) {
             Locale locale = e.getKey();
             Map<String, String> row = e.getValue();
@@ -269,15 +270,14 @@ public class SimpleI18nCodeList extends AbstractI18nCodeList implements
     public void setRowsByCodeList(Map<Locale, CodeList> rows) {
         checkTable();
         Table<Locale, String, String> table = createTable();
-        for (Map.Entry<Locale, CodeList> e : rows.entrySet()) {
+        rows.entrySet().forEach(e -> {
             Locale locale = e.getKey();
-            Map<String, String> row = e.getValue().asMap();
-            for (Map.Entry<String, String> re : row.entrySet()) {
+            e.getValue().asMap().entrySet().forEach(re -> {
                 String value = re.getKey();
                 String label = re.getValue();
                 table.put(locale, value, label);
-            }
-        }
+            });
+        });
         this.codeListTable = Tables.unmodifiableTable(table);
     }
 
@@ -291,15 +291,14 @@ public class SimpleI18nCodeList extends AbstractI18nCodeList implements
     public void setColumns(Map<String, Map<Locale, String>> cols) {
         checkTable();
         Table<Locale, String, String> table = createTable();
-        for (Map.Entry<String, Map<Locale, String>> e : cols.entrySet()) {
+        cols.entrySet().forEach(e -> {
             String value = e.getKey();
-            Map<Locale, String> col = e.getValue();
-            for (Map.Entry<Locale, String> ce : col.entrySet()) {
+            e.getValue().entrySet().forEach(ce -> {
                 Locale locale = ce.getKey();
                 String label = ce.getValue();
                 table.put(locale, value, label);
-            }
-        }
+            });
+        });
         this.codeListTable = Tables.unmodifiableTable(table);
     }
 

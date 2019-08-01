@@ -15,7 +15,13 @@
  */
 package org.terasoluna.gfw.common.fullhalf;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.stream.IntStream;
 
 /**
  * Convert which converts from fullwidth to halfwidth and from halfwidth to fullwidth. This implementation does not have the
@@ -63,7 +69,7 @@ public final class FullHalfConverter {
         Set<FullHalfPair> pairSet = pairs.pairs();
         Map<String, FullHalfPair> f = new HashMap<String, FullHalfPair>();
         Map<String, FullHalfPair> h = new HashMap<String, FullHalfPair>();
-        for (FullHalfPair pair : pairSet) {
+        pairSet.forEach(pair -> {
             // first definition is prior
             if (!f.containsKey(pair.fullwidth())) {
                 f.put(pair.fullwidth(), pair);
@@ -71,7 +77,7 @@ public final class FullHalfConverter {
             if (!h.containsKey(pair.halfwidth())) {
                 h.put(pair.halfwidth(), pair);
             }
-        }
+        });
         this.fullwidthMap = Collections.unmodifiableMap(f);
         this.halfwidthMap = Collections.unmodifiableMap(h);
         this.predicate = pairs.predicate();
@@ -86,12 +92,14 @@ public final class FullHalfConverter {
         if (fullwidth == null || fullwidth.isEmpty()) {
             return fullwidth;
         }
-        StringBuilder builder = new StringBuilder();
-        for (int i = 0; i < fullwidth.length(); i++) {
-            String s = String.valueOf(fullwidth.charAt(i));
-            builder.append(halfwidth(s));
-        }
-        return builder.toString();
+        return IntStream.range(0, fullwidth.length()) //
+                .collect(StringBuilder::new, //
+                        (sb, i) -> {
+                            String s = String.valueOf(fullwidth.charAt(i));
+                            sb.append(halfwidth(s));
+                        }, //
+                        StringBuilder::append) //
+                .toString();
     }
 
     /**
@@ -106,13 +114,13 @@ public final class FullHalfConverter {
         StringBuilder builder = new StringBuilder();
         Queue<String> buffer = new LinkedList<String>(); // use queue as 1 element buffer
 
-        for (int i = 0; i < halfwidth.length(); i++) {
+        IntStream.range(0, halfwidth.length()).forEachOrdered(i -> {
             char c = halfwidth.charAt(i);
             String s = String.valueOf(c);
             // next loop when the buffer is empty
             if (buffer.isEmpty()) {
                 buffer.add(s);
-                continue;
+                return;
             }
             // poll the previous string from buffer
             String prev = buffer.poll();
@@ -133,7 +141,7 @@ public final class FullHalfConverter {
                 builder.append(fullwidth(prev));
                 buffer.add(s);
             }
-        }
+        });
         // append the string in the buffer if exists
         if (!buffer.isEmpty()) {
             builder.append(fullwidth(buffer.poll()));
@@ -148,11 +156,7 @@ public final class FullHalfConverter {
      */
     private String fullwidth(String s) {
         FullHalfPair pair = this.halfwidthMap.get(s);
-        if (pair != null) {
-            return pair.fullwidth();
-        } else {
-            return s;
-        }
+        return pair == null ? s : pair.fullwidth();
     }
 
     /**
@@ -162,10 +166,6 @@ public final class FullHalfConverter {
      */
     private String halfwidth(String s) {
         FullHalfPair pair = this.fullwidthMap.get(s);
-        if (pair != null) {
-            return pair.halfwidth();
-        } else {
-            return s;
-        }
+        return pair == null ? s : pair.halfwidth();
     }
 }

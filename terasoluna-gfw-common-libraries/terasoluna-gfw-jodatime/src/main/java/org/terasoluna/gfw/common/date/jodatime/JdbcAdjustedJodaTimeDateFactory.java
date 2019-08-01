@@ -69,12 +69,8 @@ public class JdbcAdjustedJodaTimeDateFactory extends AbstractJodaTimeDateFactory
      */
     @Override
     public DateTime newDateTime() {
-        long adjustedValue;
-        if (isUseCache()) {
-            adjustedValue = cachedAdjustedValue.get();
-        } else {
-            adjustedValue = reload();
-        }
+        long adjustedValue = isUseCache() ? cachedAdjustedValue.get()
+                : reload();
         return new DateTime().plus(adjustedValue);
     }
 

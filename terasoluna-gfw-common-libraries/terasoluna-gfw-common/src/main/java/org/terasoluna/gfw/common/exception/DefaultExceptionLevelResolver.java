@@ -88,11 +88,8 @@ public class DefaultExceptionLevelResolver implements ExceptionLevelResolver {
      * @return exception code
      */
     protected String resolveExceptionCode(Exception ex) {
-        String exceptionCode = null;
-        if (exceptionCodeResolver != null) {
-            exceptionCode = exceptionCodeResolver.resolveExceptionCode(ex);
-        }
-        return exceptionCode;
+        return exceptionCodeResolver == null ? null
+                : exceptionCodeResolver.resolveExceptionCode(ex);
     }
 
 }

@@ -90,10 +90,10 @@ public class CodeListInterceptor extends HandlerInterceptorAdapter implements
             return;
         }
 
-        for (CodeList codeList : codeLists) {
+        codeLists.forEach(codeList -> {
             String attributeName = codeList.getCodeListId();
             request.setAttribute(attributeName, codeList.asMap());
-        }
+        });
     }
 
     /**
@@ -116,17 +116,19 @@ public class CodeListInterceptor extends HandlerInterceptorAdapter implements
         Map<String, CodeList> definedCodeLists = BeanFactoryUtils
                 .beansOfTypeIncludingAncestors(applicationContext,
                         CodeList.class, false, false);
-        Map<String, CodeList> targetCodeLists = new HashMap<String, CodeList>();
-        for (CodeList codeList : definedCodeLists.values()) {
-            String codeListId = codeList.getCodeListId();
-            if (codeListId != null) {
-                Matcher codeListIdMatcher = this.codeListIdPattern.matcher(
-                        codeListId);
-                if (codeListIdMatcher.matches()) {
-                    targetCodeLists.put(codeListId, codeList);
-                }
-            }
-        }
+        Map<String, CodeList> targetCodeLists = definedCodeLists.values()
+                .stream().filter(codeList -> {
+                    String codeListId = codeList.getCodeListId();
+                    if (codeListId == null) {
+                        return false;
+                    }
+                    Matcher codeListIdMatcher = this.codeListIdPattern.matcher(
+                            codeListId);
+                    return codeListIdMatcher.matches();
+                }).collect(HashMap::new, //
+                        (map, codeList) -> map.put(codeList.getCodeListId(),
+                                codeList), //
+                        Map::putAll);
 
         if (logger.isDebugEnabled()) {
             logger.debug("registered codeList : {}", targetCodeLists.keySet());

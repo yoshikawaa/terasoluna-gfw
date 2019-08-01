@@ -17,6 +17,7 @@ package org.terasoluna.gfw.web.logging;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -204,10 +205,11 @@ public class TraceLoggingInterceptor extends HandlerInterceptorAdapter {
      */
     protected static String buildMethodParams(HandlerMethod handlerMethod) {
         MethodParameter[] params = handlerMethod.getMethodParameters();
-        List<String> lst = new ArrayList<String>(params.length);
-        for (MethodParameter p : params) {
-            lst.add(p.getParameterType().getSimpleName());
-        }
+        List<String> lst = Arrays.stream(params) //
+                .collect(() -> new ArrayList<String>(params.length), //
+                        (list, p) -> list.add(p.getParameterType()
+                                .getSimpleName()), //
+                        List::addAll);
         return StringUtils.collectionToCommaDelimitedString(lst);
     }
 

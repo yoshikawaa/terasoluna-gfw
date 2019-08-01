@@ -163,16 +163,16 @@ class ObjectToMapConverter {
      * @return converted map. all keys are prefixed with the given key
      */
     private Map<String, String> convert(String prefix, Map<?, ?> value) {
-        Map<String, String> map = new LinkedHashMap<String, String>();
-        for (Map.Entry<?, ?> e : value.entrySet()) {
-            if (StringUtils.isEmpty(prefix)) {
-                map.putAll(this.convert(e.getKey().toString(), e.getValue()));
-            } else {
-                map.putAll(this.convert(prefix + "[" + e.getKey() + "]", e
-                        .getValue()));
-            }
-        }
-        return map;
+        return value.entrySet().stream() //
+                .collect(LinkedHashMap::new, (map, e) -> {
+                    if (StringUtils.isEmpty(prefix)) {
+                        map.putAll(this.convert(e.getKey().toString(), e
+                                .getValue()));
+                    } else {
+                        map.putAll(this.convert(prefix + "[" + e.getKey() + "]",
+                                e.getValue()));
+                    }
+                }, Map::putAll);
     }
 
     /**
@@ -237,10 +237,10 @@ class ObjectToMapConverter {
         PropertyDescriptor[] pds = beanWrapper.getPropertyDescriptors();
 
         // flatten properties in the given object
-        for (PropertyDescriptor pd : pds) {
+        Arrays.stream(pds).forEach(pd -> {
             String name = pd.getName();
             if ("class".equals(name) || !beanWrapper.isReadableProperty(name)) {
-                continue;
+                return;
             }
             Object value = beanWrapper.getPropertyValue(name);
             TypeDescriptor sourceType = beanWrapper.getPropertyTypeDescriptor(
@@ -252,7 +252,7 @@ class ObjectToMapConverter {
                 Map<String, String> subMap = this.convert(name, value);
                 map.putAll(subMap);
             }
-        }
+        });
 
         return map;
     }

@@ -16,6 +16,7 @@
 package org.terasoluna.gfw.web.exception;
 
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -183,12 +184,11 @@ public class HandlerExceptionResolverLoggingInterceptor implements
         if (ignoreExceptions == null) {
             return true;
         }
-        for (Class<? extends Exception> ignoreClass : ignoreExceptions) {
-            if (ignoreClass.isInstance(ex)) {
-                return false;
-            }
-        }
-        return true;
+        Optional<?> ignoreException = ignoreExceptions.stream() //
+                .filter(ignoreClass -> ignoreClass.isInstance(ex)) //
+                .findAny();
+
+        return !ignoreException.isPresent();
     }
 
     /**

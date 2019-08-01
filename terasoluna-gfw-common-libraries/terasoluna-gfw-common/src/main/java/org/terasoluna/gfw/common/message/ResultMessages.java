@@ -20,6 +20,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -145,9 +146,7 @@ public class ResultMessages implements Serializable, Iterable<ResultMessage> {
      */
     public ResultMessages addAll(ResultMessage... messages) {
         if (messages != null) {
-            for (ResultMessage message : messages) {
-                add(message);
-            }
+            Arrays.stream(messages).forEachOrdered(message -> add(message));
         } else {
             throw new IllegalArgumentException("messages must not be null");
         }
@@ -164,9 +163,7 @@ public class ResultMessages implements Serializable, Iterable<ResultMessage> {
      */
     public ResultMessages addAll(Collection<ResultMessage> messages) {
         if (messages != null) {
-            for (ResultMessage message : messages) {
-                add(message);
-            }
+            messages.stream().forEachOrdered(message -> add(message));
         } else {
             throw new IllegalArgumentException("messages must not be null");
         }

@@ -63,15 +63,13 @@ public class JdbcCodeList extends AbstractReloadableCodeList {
     @Override
     protected Map<String, String> retrieveMap() {
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(querySql);
-        LinkedHashMap<String, String> result = new LinkedHashMap<String, String>();
-        for (Map<String, Object> row : rows) {
-            Object key = row.get(valueColumn);
-            Object value = row.get(labelColumn);
-            if (key != null && value != null) {
-                result.put(key.toString(), value.toString());
-            }
-        }
-        return result;
+        return rows.stream() //
+                .filter(row -> row.containsKey(valueColumn) && row.containsKey(
+                        labelColumn)) //
+                .collect(LinkedHashMap::new, //
+                        (map, row) -> map.put(row.get(valueColumn).toString(),
+                                row.get(labelColumn).toString()), //
+                        Map::putAll);
     }
 
     /**

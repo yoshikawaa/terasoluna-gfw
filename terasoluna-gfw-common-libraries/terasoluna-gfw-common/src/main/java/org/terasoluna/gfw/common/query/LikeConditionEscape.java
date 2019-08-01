@@ -15,6 +15,8 @@
  */
 package org.terasoluna.gfw.common.query;
 
+import java.util.stream.IntStream;
+
 /**
  * An object to escape like condition in a query.<br>
  * @since 1.0.2
@@ -99,14 +101,12 @@ public class LikeConditionEscape {
      */
     public StringBuilder toLikeCondition(String condition,
             StringBuilder likeCondition) {
-        StringBuilder storingLikeCondition = likeCondition;
-        if (storingLikeCondition == null) {
-            storingLikeCondition = new StringBuilder();
-        }
+        StringBuilder storingLikeCondition = likeCondition == null
+                ? new StringBuilder() : likeCondition;
         if (condition == null) {
             return storingLikeCondition;
         }
-        for (int i = 0; i < condition.length(); i++) {
+        IntStream.range(0, condition.length()).forEachOrdered(i -> {
             char c = condition.charAt(i);
             if (c == LIKE_ESC_CHAR) {
                 storingLikeCondition.append(LIKE_ESC_CHAR);
@@ -116,7 +116,7 @@ public class LikeConditionEscape {
                 storingLikeCondition.append(LIKE_ESC_CHAR);
             }
             storingLikeCondition.append(c);
-        }
+        });
         return storingLikeCondition;
     }
 

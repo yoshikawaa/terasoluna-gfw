@@ -41,8 +41,6 @@ import com.google.common.collect.Tables;
  * <p>
  * To build a table of codelist, set a map of the {@link Locale} and the corresponding {@link ReloadableCodeList}.<br>
  * </p>
- *
- *
  * <h3>set by rows with {@link ReloadableCodeList}</h3>
  *
  * <pre>
@@ -75,7 +73,6 @@ import com.google.common.collect.Tables;
  *     &lt;property name=&quot;valueColumn&quot; value=&quot;code&quot; /&gt;
  *     &lt;property name=&quot;labelColumn&quot; value=&quot;label&quot; /&gt;
  * &lt;/bean&gt;
- *
  * </pre>
  *
  * @since 5.4.2
@@ -160,15 +157,14 @@ public class SimpleReloadableI18nCodeList extends AbstractI18nCodeList
             logger.debug("refresh codelist codeListId={}", getCodeListId());
         }
         Table<Locale, String, String> table = createTable();
-        for (Map.Entry<Locale, ReloadableCodeList> e : codeLists.entrySet()) {
+        codeLists.entrySet().forEach(e -> {
             Locale locale = e.getKey();
-            Map<String, String> row = e.getValue().asMap();
-            for (Map.Entry<String, String> re : row.entrySet()) {
+            e.getValue().asMap().entrySet().forEach(re -> {
                 String value = re.getKey();
                 String label = re.getValue();
                 table.put(locale, value, label);
-            }
-        }
+            });
+        });
         this.codeListTable = Tables.unmodifiableTable(table);
     }
 

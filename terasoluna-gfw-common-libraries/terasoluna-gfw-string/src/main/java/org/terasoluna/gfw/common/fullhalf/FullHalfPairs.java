@@ -50,12 +50,7 @@ public class FullHalfPairs {
         }
         this.pairs = pairs;
         this.predicate = predicate != null ? predicate
-                : new AppendablePredicate() {
-                    @Override
-                    public boolean isAppendable(char c) {
-                        return c == 'ﾞ' || c == 'ﾟ';
-                    }
-                };
+                : c -> c == 'ﾞ' || c == 'ﾟ';
     }
 
     /**
@@ -77,6 +72,7 @@ public class FullHalfPairs {
     /**
      * The predicate to check whether the given character is appendable.
      */
+    @FunctionalInterface
     public interface AppendablePredicate {
         /**
          * Return whether the given character is appendable.

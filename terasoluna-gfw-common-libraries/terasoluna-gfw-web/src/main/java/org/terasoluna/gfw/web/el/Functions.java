@@ -17,6 +17,7 @@ package org.terasoluna.gfw.web.el;
 
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
@@ -198,14 +199,11 @@ public final class Functions {
         if (value == null || value.isEmpty()) {
             return "";
         }
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0, l = value.length(); i < l; i++) {
-            if (i >= length) {
-                break;
-            }
-            sb.append(value.charAt(i));
-        }
-        return sb.toString();
+        return IntStream.range(0, Math.min(length, value.length())) //
+                .collect(StringBuilder::new, //
+                        (sb, i) -> sb.append(value.charAt(i)), //
+                        StringBuilder::append) //
+                .toString();
     }
 
     /**
@@ -234,11 +232,11 @@ public final class Functions {
             return "";
         }
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("");
-        for (Map.Entry<String, ?> e : map.entrySet()) {
+        map.entrySet().forEach(e -> {
             String name = e.getKey();
             Object value = e.getValue();
             builder.queryParam(name, value);
-        }
+        });
         String query = builder.build().encode().toString();
         // remove the beginning symbol character('?') of the query string.
         return extraEncodeQuery(query.substring(1));
@@ -263,7 +261,7 @@ public final class Functions {
             return "";
         }
         UriComponentsBuilder builder = UriComponentsBuilder.fromPath("");
-        for (Map.Entry<String, ?> e : map.entrySet()) {
+        map.entrySet().forEach(e -> {
             String name = e.getKey();
             Object value = e.getValue();
             TypeDescriptor sourceType;
@@ -274,7 +272,7 @@ public final class Functions {
             }
             builder.queryParam(name, CONVERSION_SERVICE.convert(value,
                     sourceType, STRING_DESC));
-        }
+        });
         String query = builder.build().encode().toString();
         // remove the beginning symbol character('?') of the query string.
         return extraEncodeQuery(query.substring(1));
@@ -343,41 +341,43 @@ public final class Functions {
         if (value == null || value.isEmpty()) {
             return "";
         }
-        StringBuilder result = new StringBuilder();
 
-        for (int i = 0; i < value.length(); i++) {
-            char ch = value.charAt(i);
-            switch (ch) {
-            case '\'':
-                result.append("\\'");
-                break;
-            case '"':
-                result.append("\\\"");
-                break;
-            case '\\':
-                result.append("\\\\");
-                break;
-            case '/':
-                result.append("\\/");
-                break;
-            case '<':
-                result.append("\\x3c");
-                break;
-            case '>':
-                result.append("\\x3e");
-                break;
-            case '\r':
-                result.append("\\r");
-                break;
-            case '\n':
-                result.append("\\n");
-                break;
-            default:
-                result.append(ch);
-                break;
-            }
-        }
-        return result.toString();
+        return IntStream.range(0, value.length()) //
+                .collect(StringBuilder::new, //
+                        (result, i) -> {
+                            char ch = value.charAt(i);
+                            switch (ch) {
+                            case '\'':
+                                result.append("\\'");
+                                break;
+                            case '"':
+                                result.append("\\\"");
+                                break;
+                            case '\\':
+                                result.append("\\\\");
+                                break;
+                            case '/':
+                                result.append("\\/");
+                                break;
+                            case '<':
+                                result.append("\\x3c");
+                                break;
+                            case '>':
+                                result.append("\\x3e");
+                                break;
+                            case '\r':
+                                result.append("\\r");
+                                break;
+                            case '\n':
+                                result.append("\\n");
+                                break;
+                            default:
+                                result.append(ch);
+                                break;
+                            }
+                        }, //
+                        StringBuilder::append) //
+                .toString();
     }
 
     /**

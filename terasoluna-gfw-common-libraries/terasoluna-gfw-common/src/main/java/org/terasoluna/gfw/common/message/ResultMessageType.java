@@ -21,6 +21,7 @@ package org.terasoluna.gfw.common.message;
  * The {@link StandardResultMessageType} enumeration type defines the <i>standard</i> types.
  * </p>
  */
+@FunctionalInterface
 public interface ResultMessageType {
     /**
      * Returns message type as String.<br>

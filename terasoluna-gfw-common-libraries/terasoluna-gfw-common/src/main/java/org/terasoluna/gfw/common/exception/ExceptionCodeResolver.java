@@ -19,6 +19,7 @@ package org.terasoluna.gfw.common.exception;
  * Provides the functionality to determine {@link ExceptionCodeProvider} based on <br>
  * Exception object
  */
+@FunctionalInterface
 public interface ExceptionCodeResolver {
 
     /**

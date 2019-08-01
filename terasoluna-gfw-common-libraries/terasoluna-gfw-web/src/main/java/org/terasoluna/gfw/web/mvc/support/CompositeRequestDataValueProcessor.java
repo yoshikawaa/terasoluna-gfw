@@ -78,16 +78,7 @@ public class CompositeRequestDataValueProcessor implements
      */
     public String processAction(HttpServletRequest request, String action) {
 
-        String result = action;
-        for (RequestDataValueProcessor processor : processors) {
-            result = processActionInvocationHelper.invokeProcessAction(
-                    processor, request, action, null);
-            if (!action.equals(result)) {
-                break;
-            }
-        }
-
-        return result;
+        return processAction(request, action, null);
     }
 
     /**
@@ -104,16 +95,13 @@ public class CompositeRequestDataValueProcessor implements
     public String processAction(HttpServletRequest request, String action,
             String method) {
 
-        String result = action;
-        for (RequestDataValueProcessor processor : processors) {
-            result = processActionInvocationHelper.invokeProcessAction(
-                    processor, request, action, method);
-            if (!action.equals(result)) {
-                break;
-            }
-        }
-
-        return result;
+        return processors.stream() //
+                .map(processor -> processActionInvocationHelper
+                        .invokeProcessAction(processor, request, action,
+                                method)) //
+                .filter(result -> !action.equals(result)) //
+                .findFirst() //
+                .orElse(action);
     }
 
     /**
@@ -130,16 +118,12 @@ public class CompositeRequestDataValueProcessor implements
     public String processFormFieldValue(HttpServletRequest request, String name,
             String value, String type) {
 
-        String result = value;
-        for (RequestDataValueProcessor processor : processors) {
-            result = processor.processFormFieldValue(request, name, value,
-                    type);
-            if (!value.equals(result)) {
-                break;
-            }
-        }
-
-        return result;
+        return processors.stream() //
+                .map(processor -> processor.processFormFieldValue(request, name,
+                        value, type)) //
+                .filter(result -> !value.equals(result)) //
+                .findFirst() //
+                .orElse(value);
     }
 
     /**
@@ -151,14 +135,11 @@ public class CompositeRequestDataValueProcessor implements
     @Override
     public Map<String, String> getExtraHiddenFields(
             HttpServletRequest request) {
-        Map<String, String> result = new LinkedHashMap<String, String>();
-        for (RequestDataValueProcessor processor : reversedProcessors) {
-            Map<String, String> map = processor.getExtraHiddenFields(request);
-            if (map != null) {
-                result.putAll(map);
-            }
-        }
-        return result;
+
+        return reversedProcessors.stream() //
+                .map(processor -> processor.getExtraHiddenFields(request)) //
+                .filter(map -> map != null) //
+                .collect(LinkedHashMap::new, Map::putAll, Map::putAll);
     }
 
     /**
@@ -171,14 +152,12 @@ public class CompositeRequestDataValueProcessor implements
      */
     @Override
     public String processUrl(HttpServletRequest request, String url) {
-        String result = url;
-        for (RequestDataValueProcessor processor : processors) {
-            result = processor.processUrl(request, url);
-            if (!url.equals(result)) {
-                break;
-            }
-        }
-        return result;
+
+        return processors.stream() //
+                .map(processor -> processor.processUrl(request, url)) //
+                .filter(result -> !url.equals(result)) //
+                .findFirst() //
+                .orElse(url);
     }
 
 }

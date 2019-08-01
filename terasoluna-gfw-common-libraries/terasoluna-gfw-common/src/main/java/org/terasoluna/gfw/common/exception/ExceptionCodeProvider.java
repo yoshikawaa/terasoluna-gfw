@@ -18,6 +18,7 @@ package org.terasoluna.gfw.common.exception;
 /**
  * Exception code
  */
+@FunctionalInterface
 public interface ExceptionCodeProvider {
 
     /**
